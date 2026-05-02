@@ -15,18 +15,22 @@ public class InputListener {
     public Map<Integer, Integer> freqMap;
     public static int startingFreq = 82;
 
+
+
     public InputListener() {
         // Define the keys you want to listen to
 
         NoteMapper a = new NoteMapper();
         String chromatic3 = "\\qazwsxedcrfvtgbyhnujmik,ol.p;/['";
         ArrayList<Integer> keys = a.readFromString(chromatic3);
-        Map<Integer, Integer> map = a.chromaticFrequencies(keys, startingFreq);
+        Map<Integer, Integer> map = a.chromaticFrequenciesInt(keys, startingFreq);
         freqMap = map;
+
 
         // Create a thread to handle key listening
         Thread listenerThread = new Thread(this::startListening);
         listenerThread.start();
+
 
 
     }
@@ -41,27 +45,53 @@ public class InputListener {
 
 
     boolean testFlag = true;
+
+    private void setAllTimesInit(){
+
+
+
+
+    }
+
+    private void updateOctaveLabel() {
+        SwingUtilities.invokeLater(() ->
+                octaveLabel.setText("Octave: " + octaveOffset)
+        );
+    }
+
+
+    JFrame frame;
+    private JLabel octaveLabel;
+
+    private int octaveOffset = 0;
     private void startListening() {
         // Swing GUI to capture key events
-        JFrame frame = new JFrame("Key Listener");
+        frame = new JFrame("Key Listener");
         frame.setSize(300, 200);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setFocusable(true);
         frame.setVisible(true);
         this.player = new NotePlayer();
-        waveThread();
+        player.initHarmonics(startingFreq);
 
-        if(testFlag&&false){
-            synchronized (freqMap) {
-                testFlag = false;
-                for (Integer k : freqMap.keySet()) {
-                    Integer originalValue = freqMap.get(k);
-                    freqMap.put(originalValue, originalValue / 2);
-                }
-            }
+        frame.setLayout(new java.awt.BorderLayout());
+
+        octaveLabel = new JLabel("Octave: 0", SwingConstants.CENTER);
+        octaveLabel.setFont(new java.awt.Font("Arial", java.awt.Font.BOLD, 20));
+
+        frame.add(octaveLabel, java.awt.BorderLayout.CENTER);
+
+        for (Map.Entry<Integer, Integer> entry : freqMap.entrySet()) {
+            Integer value = entry.getValue();
+
+               player.updateNoteStatus(value, true);
+               player.updateNoteStatus(value, false);
         }
 
-        this.player = new NotePlayer();
+        waveThread();
+
+
+
         frame.addKeyListener(new KeyListener() {
             @Override
             public void keyTyped(KeyEvent e) {}
@@ -75,6 +105,29 @@ public class InputListener {
                  //   System.out.println("Selected key pressed: " + KeyEvent.getKeyText(e.getKeyCode()));
                    // System.out.println("frequency = "+freq);
                     player.updateNoteStatus(freq, true);
+                }
+
+                if(e.getKeyCode() == KeyEvent.VK_SPACE){
+                    if(e.isShiftDown()){
+                        for (int i = 0; i <4*12 ; i++) {
+                            NoteMapper.frequencies[i]*=2;
+                        }
+                        octaveOffset+=1;
+                        player.initHarmonics(NoteMapper.frequencies[0]);
+                        updateOctaveLabel();
+
+                    }
+                }
+                if(e.getKeyCode() == KeyEvent.VK_SPACE){
+                    if(e.isControlDown()){
+                        for (int i = 0; i <4*12 ; i++) {
+                            NoteMapper.frequencies[i]/=2;
+                        }
+
+                        player.initHarmonics(NoteMapper.frequencies[0]);
+                        octaveOffset-=1;
+                        updateOctaveLabel();
+                    }
                 }
 
 

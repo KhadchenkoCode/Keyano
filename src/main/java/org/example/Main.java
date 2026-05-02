@@ -18,13 +18,15 @@ public class Main {
     public static void main(String[] args) throws LineUnavailableException {
 
 
-        String startNote = "E2";
+        String startNote = "E3";
+
+
         PrimitiveGuitarTabConverter.lowestNoteCurrentTuning = PrimitiveGuitarTabConverter.pitchFromNote(startNote);
 
         //58 (A#2), 82, 82*2
         InputListener.startingFreq = (int)(Main.getHzFromNote(startNote)*Math.pow(semitone, 0));
         args = new String[2];
-        args[0] = "convert";
+//        args[0] = "convert";
 
         launchStart = System.currentTimeMillis();
         launchStartNano = System.nanoTime();
@@ -35,7 +37,7 @@ public class Main {
 
             //System.out.println(new File("").getAbsolutePath());
             String path = args[1];
-            path = "MutterTabs.txt"; // tmp for testing
+            path = "Tabs/Rammstein_MGM_Bass.txt"; // tmp for testing
             String output = PrimitiveGuitarTabConverter.parseFile(path);
             output = output.replace('\r', '\n');
             output = output.replace('-', ' ');

@@ -8,7 +8,42 @@ target/
 .idea/jarRepositories.xml
 .idea/compiler.xml
 .idea/libraries/
+*.iwstarget/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### IntelliJ IDEA ###
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
+.idea/libraries/# IntelliJ IDEA files
+.idea/
+*.iml
 *.iws
+out/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build / target directories
+target/
+build/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.temp
+
+.gradle/
+*.iws
+*.iml
+*.ipr
+
+
 *.iml
 *.ipr
 
