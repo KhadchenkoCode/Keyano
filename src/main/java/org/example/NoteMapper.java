@@ -28,7 +28,7 @@ public class NoteMapper {
         return ret;
     }
 
-    private static  int keyCodeFromChar(char c){
+    public static  int keyCodeFromChar(char c){
         int keyCode = KeyEvent.getExtendedKeyCodeForChar(c);
 
         return keyCode;
@@ -48,11 +48,11 @@ public class NoteMapper {
 
 
 
-   public static Map<Integer, Integer> chromaticFrequenciesInt(List<Integer> keyCodes, int startingFrequency_hz) {
+   public static Map<Integer, Integer> chromaticFrequenciesInt(List<Integer> keyCodes, double startingFrequency_hz) {
         Map<Integer, Integer> ret = new HashMap<Integer, Integer>();
         int frequency = hertzToSemitone(startingFrequency_hz);
         frequencies=new double[FourOctaves];
-        float frequencyHz = startingFrequency_hz;
+        double frequencyHz = startingFrequency_hz;
 
         for (int i = 0; i <keyCodes.size() ; i++) {
 

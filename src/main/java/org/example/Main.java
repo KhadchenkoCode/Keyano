@@ -14,19 +14,42 @@ public class Main {
     public static long launchStartNano;
     public static final double semitone = 1.05946309436;
 
+    public static final String chromatic3 = "\\qazwsxedcrfvtgbyhnujmik,ol.p;/['";
+
+    public static String currentFile = "--" +
+            "Tabs/Lindemann_PA_Synth.txt";
 
     public static void main(String[] args) throws LineUnavailableException {
 
 
-        String startNote = "E3";
+
+        String        startNote = "E2";
+
+
 
 
         PrimitiveGuitarTabConverter.lowestNoteCurrentTuning = PrimitiveGuitarTabConverter.pitchFromNote(startNote);
 
+        byte E7Byte = PrimitiveGuitarTabConverter.pitchFromNote("E7");
+        byte E0Byte = PrimitiveGuitarTabConverter.pitchFromNote("E0");
+
+
+        double E7Hz = Main.getHzFromNote("E7");
+        double E6Hz = Main.getHzFromNote("E6");
+
+        double E5Hz = Main.getHzFromNote("E5");
+        double E4Hz = Main.getHzFromNote("E4");
+        double E3Hz = Main.getHzFromNote("E3");
+        double E2Hz = Main.getHzFromNote("E2");
+        double E1Hz = Main.getHzFromNote("E1");
+        double E0Hz = Main.getHzFromNote("E0");
+
         //58 (A#2), 82, 82*2
-        InputListener.startingFreq = (int)(Main.getHzFromNote(startNote)*Math.pow(semitone, 0));
+        InputListener.startingFreq = (Main.getHzFromNote(startNote)*Math.pow(semitone, 0));
+
+
         args = new String[2];
-//        args[0] = "convert";
+      //  args[0] = "convert";
 
         launchStart = System.currentTimeMillis();
         launchStartNano = System.nanoTime();
@@ -37,7 +60,7 @@ public class Main {
 
             //System.out.println(new File("").getAbsolutePath());
             String path = args[1];
-            path = "Tabs/Rammstein_MGM_Bass.txt"; // tmp for testing
+            path = "Tabs/EngelTab.txt"; // tmp for testing
             String output = PrimitiveGuitarTabConverter.parseFile(path);
             output = output.replace('\r', '\n');
             output = output.replace('-', ' ');
@@ -53,57 +76,20 @@ public class Main {
         byte startA0 = PrimitiveGuitarTabConverter.pitchFromNote("A0");
 
         float ret = A0_Hz;
+        if(startA0<parsedPitch)
         for(int i = startA0; i<parsedPitch; i++){
             ret*=semitone;
         }
+        if(startA0>parsedPitch){
+            for (int i = startA0; i >parsedPitch; i--) {
+                ret/=semitone;
+            }
+        }
+
         return ret;
 
     }
 
-    public static void playFrequency(double frequency, int durationMs) throws LineUnavailableException {
-        float sampleRate = 44100;
-        byte[] buffer = new byte[(int) (sampleRate * durationMs / 1000)];
 
-        for (int i = 0; i < buffer.length; i++) {
-            double angle = 2.0 * Math.PI * frequency * i / sampleRate;
-            buffer[i] = (byte) (Math.sin(angle) * 127);
-        }
-
-        AudioFormat format = new AudioFormat(sampleRate, 8, 1, true, false);
-        SourceDataLine line = AudioSystem.getSourceDataLine(format);
-        line.open(format);
-        line.start();
-        line.write(buffer, 0, buffer.length);
-        line.drain();
-        line.close();
-    }
-
-    public static void playFrequencyWithOvertones(double baseFreq, int durationMs) throws LineUnavailableException {
-        float sampleRate = 44100;
-        int numSamples = (int) (sampleRate * durationMs / 1000);
-        byte[] buffer = new byte[numSamples];
-
-        for (int i = 0; i < numSamples; i++) {
-            double time = i / sampleRate;
-
-            // Fundamental and overtones (basic additive synthesis)
-            double wave =
-                    1.0 * Math.sin(2 * Math.PI * baseFreq * time) +                   // Fundamental
-                            0.25 * Math.sin(2 * Math.PI * baseFreq * 2 * time) +      // 1st overtone
-                            0.125 * Math.sin(2 * Math.PI * baseFreq * 4 * time);     // 1st overtone
-
-
-            // Scale to byte range
-            buffer[i] = (byte) (wave * 127);
-        }
-
-        AudioFormat format = new AudioFormat(sampleRate, 8, 1, true, false);
-        SourceDataLine line = AudioSystem.getSourceDataLine(format);
-        line.open(format);
-        line.start();
-        line.write(buffer, 0, buffer.length);
-        line.drain();
-        line.close();
-    }
 
 }

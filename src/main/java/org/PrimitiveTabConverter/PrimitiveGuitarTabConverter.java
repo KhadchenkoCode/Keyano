@@ -8,31 +8,27 @@ import java.util.HashMap;
 
 public class PrimitiveGuitarTabConverter {
 
-    /*
 
+    private static StringBuilder addSeparators(StringBuilder stringBuilder, String highestString) {
+        String LineBreak = "\n----------------------------------------------------------------------------------------------------------------------------------------------\n";
+        final int lengthBreak = LineBreak.length();
+        final int lengthHigh = highestString.length();
+        if(true) {
+            int index = stringBuilder.indexOf(highestString);
+            while (index != -1) {
+                try {
+                    stringBuilder.insert(index, LineBreak);
+                    index = stringBuilder.indexOf(highestString, index+lengthBreak+lengthHigh);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return stringBuilder;
 
-INPUT
+    }
 
-E4|--------------------7------------
-B3|-------8------8-7------8--7--------8---10
-G3|----9----9-------------------9----
-D3|--9-----------------------------9-
-A2|7--------------------------------
-E2|---------------------------------
-
-OUTPUT
-E4|--------------------{-------------------
-B3|------->------>-L------>--L-------->---:
-G3|----<----<-------------------<----------
-D3|--U-----------------------------U-------
-A2|V---------------------------------------
-E2|----------------------------------------
-
-
-     */
-
-    public static String parseFile(String filepath) {
-        tuningMap=new HashMap<>();
+    public static String getFullText(String filepath){
         StringBuilder fullText = new StringBuilder();
 
         try (BufferedReader br = new BufferedReader(new FileReader(filepath))) {
@@ -43,100 +39,36 @@ E2|----------------------------------------
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+        return fullText.toString();
+    }
 
-
-        return parse( fullText.toString());
+    public static String parseFile(String filepath) {
+        //tuningMap=new HashMap<>();
+       String text = getFullText(filepath);
+        return parse(text);
 
     }
 
 
     private static String parse(String input){
-        int indexHeaderStart = input.indexOf("Header_Start");
-        int indexHeaderEnd = input.indexOf("Header_End");
-
-        final int HeaderStartLength = "Header_Start".length();
-
-
-
-
-
-        //String substringHeader = input.substring(indexHeaderStart+HeaderStartLength+1, indexHeaderEnd-1);
-        //parseHeader(substringHeader);
-
-
         return convertTabsection(input);
 
     }
 
 
 
-    static HashMap<String, Integer> tuningMap;
-    //establishes button corresponding to this string with open fret
-    // from there 3chromatic scale is assumed
-    // int index is a key to stringKeyboardLayout index
-
-    private static void parseHeader(String input){
-        /*
-
-Header_Start
-E4|0 1 2 3 4 5 6 7 8 --|
-E4|< o l > p : ? { " --|
-
-B3|0 1 2 3 4 5 6 7 8 9 10 11 12 13  --|
-B3|u j m i k < o l > p :  ?  {  "   --|
 
 
-G3|0 1 2 3 4 5 6 7 8 9 10 11 12|
-G3|b y h n u j m i k < o  l  > |
 
-D3|0 1 2 3 4 5 6 7 8 9 10 11 12|
-D3|r f v t g b y h n u j  m  i |
+    public static final String chromatic3 = "\\qazwsxedcrfvtgbyHNujmik<oL>p;?['";;
 
 
-A2|0 1 2 3 4 5 6 7 8 9 10-------|
-A2|s x e d c r f v t g b--------|
-
-E2|0 1 2 3 4 5 6 7 8 9 10-------|
-E2|\ q a z w s x e d c r--------|
-
-Header_End
-
-         */
-
-        String[] lines = input.split("\n");
-        for(int i = 0; i < lines.length; i++){
-            if(lines[i].length() <4){ continue;}
-
-            String key = lines[i].substring(0, 2);//first 2 chars
-            char fourthChar = lines[i].charAt(3);
-            int indexOfChar = chromatic3.indexOf(fourthChar);
-       //     char debugChar = chromatic3.charAt(0);
-            if(indexOfChar>=0)
-            tuningMap.put(key, indexOfChar);
-            else {
-                System.out.println("char not found in chromatic 3" + fourthChar);
-            }
-        }
-    }
-
-    static final String chromatic3 = "\\qazwsxedcrfvtgbyHNujmik<oL>p;?['";;
-
-    private static char getButton(int fret, String string){
-        int index = tuningMap.get(string);
-        if(index+fret>=chromatic3.length()){
-            return '1';
-        }
-        return chromatic3.charAt(index+fret);
-
-    }
 
     static boolean isDigit(char c){
         return c >= '0' && c <= '9';
     }
 
-    public static byte pitch(String stringBaseNote, int fret){
-        return 0;
-    }
+
 
     static final String[] notes = {
            "C",
@@ -153,9 +85,9 @@ Header_End
             "B",
     };
 
-    public static final byte C0_byte = 32-9; // range 32-126
+    public static final byte C0_byte = 32-9;
 
-    public static byte lowestNoteCurrentTuning = (byte)pitchFromNote("E2");
+    public static byte lowestNoteCurrentTuning;
 
 
     public static byte pitchFromNote(String stringBaseNote){
@@ -180,7 +112,11 @@ Header_End
         return ret;
     }
 
-    private static String convertTabsection(String input) {
+
+    public static String convertTabsection(String input) {
+        if(input == null){
+            return null;
+        }
         String ret = input;
         String[] lines = ret.split("\n");
         StringBuilder fullText = new StringBuilder();
@@ -207,15 +143,20 @@ Header_End
                                 continue;
                             }
 
-//                            char newChar = getButton(Integer.parseInt(localNumber), baseString);
 
                             byte pitchByte = pitchFromFret(baseString, Byte.parseByte(localNumber));
                             byte button = (byte)(pitchByte-lowestNoteCurrentTuning);
-                            char newCharReworked = chromatic3.charAt(button); // exact same operation but through a different method
+                            char newCharReworked;
+                            if(button<0){
+                                newCharReworked = '@';
+                            } else if(button>=chromatic3.length()){
+                                newCharReworked = '#';
+                            } else {
+                            newCharReworked = chromatic3.charAt(button);
+                            }
+
                             int length = localNumber.length();
-if(localNumber.equals("29")){
-    System.out.println("debug");
-}
+
                            beatBuilder.replace(k-length, k, insteadOfNumber(newCharReworked, length));
 
                             localNumber = "";
@@ -227,19 +168,20 @@ if(localNumber.equals("29")){
                     }
                 }
 
-                //at this point we have a beatBuilder with converted beat, we should put it into newString somewhere
+
+
+
+
                 linebuilder.append(beatBuilder);
                 if(j<beats.length-1){ linebuilder.append("|"); }
 
             }
            fullText.append(linebuilder);
-            if(baseString.equals("E2")&&false) {
-                System.out.println("");
-                linebuilder.insert(0, "|");
-                        fullText.append("\n");
-            }
+
         }
-        return fullText.toString();
+
+        fullText=addSeparators(fullText, "E4");
+        return  fullText.toString();
     }
 
     private static String insteadOfNumber(char c, int length){
@@ -250,11 +192,4 @@ if(localNumber.equals("29")){
         return ret;
     }
 
-
-
-    public static String convertToNotes(String originalTabs){
-
-    return "";
-
-    }
 }
